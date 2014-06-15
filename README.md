@@ -11,7 +11,7 @@ exists because:
 2. Syncthing looks like a good candidate, as it needs an implementation
    other than the reference one
 
-This will probably reach an usable status, but do this is not the primary 
+The code will probably reach an usable status, but this is not the primary 
 objective. Right now, it is very far from that point.
 
 [1] https://github.com/calmh/syncthing/blob/master/protocol/PROTOCOL.md
