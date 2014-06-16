@@ -1,2 +1,2 @@
 all:
-	./bin/syncthing.py
+	PYTHONPATH=${CURDIR} ./bin/sthing
