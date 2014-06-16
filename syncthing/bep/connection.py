@@ -1,4 +1,13 @@
-from asyncio import Protocol
+from asyncio import Protocol,coroutine,Task
+from zlib import decompressobj, compressobj, MAX_WBITS, Z_DEFAULT_COMPRESSION, DEFLATED
+from syncthing.bep.clusterconfigmessage import BEPClusterConfigMessage
+from syncthing.bep.indexmessage import BEPIndexMessage
+from syncthing.bep.requestmessage import BEPRequestMessage
+from syncthing.bep.responsemessage import BEPResponseMessage
+from syncthing.bep.pingmessage import BEPPingMessage
+from syncthing.bep.pongmessage import BEPPongMessage
+from syncthing.bep.indexupdatemessage import BEPIndexUpdateMessage
+from syncthing.xdr.XDRIntegerUnserializer import XDRIntegerUnserializer
 
 class BEPConnection(Protocol):
     def __init__(self, app, loop):
@@ -25,20 +34,62 @@ class BEPConnection(Protocol):
                 print(data)
         finally:
             pass
+
+    def message_factory(self, messageVersion, messageType, messageId):
+        if messageType == BEPClusterConfigMessage.BEP_TYPE:
+            return BEPClusterConfigMessage(messageVersion, messageId)
+        if messageType == BEPIndexMessage.BEP_TYPE:
+            return BEPIndexMessage(messageVersion, messageId)
+        if messageType == BEPRequestMessage.BEP_TYPE:
+            return BEPRequestMessage(messageVersion, messageId)
+        if messageType == BEPResponseMessage.BEP_TYPE:
+            return BEPResponseMessage(messageVersion, messageId)
+        if messageType == BEPPingMessage.BEP_TYPE:
+            return BEPPingMessage(messageVersion, messageId)
+        if messageType == BEPPongMessage.BEP_TYPE:
+            return BEPPongMessage(messageVersion, messageId)
+        if messageType == BEPIndexUpdateMessage.BEP_TYPE:
+            return BEPIndexUpdateMessage(messageVersion, messageId)
+        raise Exception("Unknown message type received: " + str(messageType))
+
     
     def protocol_factory(self):
         return self
 
     def connection_made(self, transport):
         self.transport = transport
+        self.decompressor = decompressobj(-MAX_WBITS)
+        self.compressor = compressobj(level=Z_DEFAULT_COMPRESSION, method=DEFLATED, wbits=-MAX_WBITS)
+        self.unused_data = bytearray()
+        self.incoming_message = None
+
         try:
             self.app.on_connect(self)
         except AttributeError:
             pass
 
     def data_received(self, data):
-        print(data)
-        pass
+        self.unused_data += self.decompressor.decompress(data)
+        self.consume_unused_data()
+
+    def consume_unused_data(self):
+        if self.incoming_message is None and len(self.unused_data) >= 4:
+            toUnpack = XDRIntegerUnserializer().continueUnserialization(self.unused_data)
+            messageVersion = (toUnpack>>28) & 0xf
+            messageId = (toUnpack>>16) & 0xfff
+            messageType = (toUnpack>>8) & 0xff
+            self.incoming_message = self.message_factory(messageVersion, messageType, messageId)
+
+        if self.incoming_message is not None:
+            candidate = self.incoming_message.continueUnserialization(self.unused_data)
+            if candidate is not None: # Unserialization is complete
+                self.incoming_message = None
+                result = []
+                result.append(candidate)
+                candidate = self.consume_unused_data()
+                if candidate is not None:
+                    result.append(candidate)
+                tasks = [Task(self.message_received(msg), loop=self.loop) for msg in result]
 
     def connection_lost(self, exc):
         self.transport = transport
@@ -47,3 +98,8 @@ class BEPConnection(Protocol):
         except AttributeError:
             pass
         pass
+
+    @coroutine
+    def message_received(self, msg):
+        print(msg)
+        yield from []
