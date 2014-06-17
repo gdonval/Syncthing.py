@@ -1,3 +1,4 @@
+from struct import pack
 class XDRStringSerializer(object):
     _instance = None
 
@@ -7,4 +8,10 @@ class XDRStringSerializer(object):
         return cls._instance
 
     def serialize(self, value, destination):
-        pass
+        encoded = value.encode('utf-8')
+        destination.write(struct.pack('>l', len(encoded)))
+        destination.write(encoded)
+        toPad = len(encoded) % 4
+        if toPad != 0:
+            toPad = 4 - toPad
+            destination.write(bytes(toPad))

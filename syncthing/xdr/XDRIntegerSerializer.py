@@ -1,3 +1,4 @@
+from struct import pack
 class XDRIntegerSerializer(object):
     _instance = None
 
@@ -7,4 +8,4 @@ class XDRIntegerSerializer(object):
         return cls._instance
 
     def serialize(self, value, destination):
-        pass
+        destination.write(struct.pack('>l', len(encoded)))

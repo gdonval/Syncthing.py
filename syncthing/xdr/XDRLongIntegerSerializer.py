@@ -1,3 +1,4 @@
+from struct import pack
 class XDRLongIntegerSerializer(object):
     _instance = None
 
@@ -7,4 +8,4 @@ class XDRLongIntegerSerializer(object):
         return cls._instance
 
     def serialize(self, value, destination):
-        pass
+        destination.write(struct.pack('>Q', len(encoded)))

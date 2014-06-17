@@ -1,3 +1,4 @@
+from struct import pack
 class XDROpaqueSerializer(object):
     _instance = None
 
@@ -7,4 +8,9 @@ class XDROpaqueSerializer(object):
         return cls._instance
 
     def serialize(self, value, destination):
-        pass
+        destination.write(struct.pack('>l', len(value)))
+        destination.write(value)
+        toPad = len(encoded) % 4
+        if toPad != 0:
+            toPad = 4 - toPad
+            destination.write(bytes(toPad))
