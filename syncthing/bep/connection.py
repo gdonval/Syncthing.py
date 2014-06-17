@@ -66,6 +66,12 @@ class BEPConnection(Protocol):
         try:
             self.app.on_connect(connection=self)
         except AttributeError:
+            # I really do not like this approach. The exception is silenced because 
+            # the app method is not mandatory and its non-existence should not crash
+            # the application. However, should a real AttributeError -- with another
+            # cause land us here, this error silencing will be painful
+            #
+            # TODO Find a pythonic way to achieve the optional call without this secondary effect
             pass
 
     def data_received(self, data):
@@ -96,6 +102,12 @@ class BEPConnection(Protocol):
         try:
             self.app.on_disconnect(connection=self, reason=exc)
         except AttributeError:
+            # I really do not like this approach. The exception is silenced because 
+            # the app method is not mandatory and its non-existence should not crash
+            # the application. However, should a real AttributeError -- with another
+            # cause land us here, this error silencing will be painful
+            #
+            # TODO Find a pythonic way to achieve the optional call without this secondary effect
             pass
         pass
 
