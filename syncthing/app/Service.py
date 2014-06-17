@@ -18,9 +18,39 @@ class Service(object):
         This means connecting to known peers, and then starting a server"""
         Task(BEPClient(self, loop).connect(("127.0.0.1", 22000)))
 
-    def on_outbound_connect(self, destination, client_reader, client_writer):
+    def on_outbound_connect(self, connection):
         return []
 
-    def on_outbound_close(self, destination, client_reader, client_writer):
+    def on_outbound_disconnect(self, connection, reason=None):
+        return []
+
+    def on_inbound_connect(self, connection):
+        return []
+
+    def on_inbound_disconnect(self, connection, reason=None):
+        return []
+
+    def on_connect(self, connection):
+        return []
+
+    def on_disconnect(self, connection, reason=None):
+        return []
+
+    def handle_cluster_config_message(self, connection, msg):
+        return []
+
+    def handle_index_message(self, connection, msg):
+        return []
+
+    def handle_request_message(self, connection, msg):
+        return []
+
+    def handle_response_message(self, connection, msg):
+        return []
+
+    def handle_ping_message(self, connection, msg):
+        return []
+
+    def handle_pong_message(self, connection, msg):
         return []
 

@@ -7,4 +7,6 @@ class BEPClient(BEPConnection):
 
     @asyncio.coroutine
     def connect(self, destination):
+        self.remote_endpoint = destination
         (transport, protocol) = yield from self.loop.create_connection(self.protocol_factory, host=destination[0], port=destination[1], ssl=self.ssl_context)
+        yield from self.app.on_outbound_connect(self)

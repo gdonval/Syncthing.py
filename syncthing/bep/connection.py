@@ -64,7 +64,7 @@ class BEPConnection(Protocol):
         self.incoming_message = None
 
         try:
-            self.app.on_connect(self)
+            self.app.on_connect(connection=self)
         except AttributeError:
             pass
 
@@ -94,12 +94,23 @@ class BEPConnection(Protocol):
     def connection_lost(self, exc):
         self.transport = transport
         try:
-            self.app.on_disconnect(self, exc)
+            self.app.on_disconnect(connection=self, reason=exc)
         except AttributeError:
             pass
         pass
 
     @coroutine
     def message_received(self, msg):
-        print(msg)
+        if type(msg) is BEPClusterConfigMessage:
+            yield from self.app.handle_cluster_config_message(self, msg)
+        if type(msg) is BEPIndexMessage:
+            yield from self.app.handle_index_message(self, msg)
+        if type(msg) is BEPRequestMessage:
+            yield from self.app.handle_request_message(self, msg)
+        if type(msg) is BEPResponseMessage:
+            yield from self.app.handle_response_message(self, msg)
+        if type(msg) is BEPPingMessage:
+            yield from self.app.handle_ping_message(self, msg)
+        if type(msg) is BEPPongMessage:
+            yield from self.app.handle_pong_message(self, msg)
         yield from []
