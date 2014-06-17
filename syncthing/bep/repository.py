@@ -2,6 +2,8 @@ from syncthing.bep.serializable import BEPSerializable
 from syncthing.bep.node import BEPNode
 from syncthing.xdr.XDRStringUnserializer import XDRStringUnserializer
 from syncthing.xdr.XDRArrayUnserializer import XDRArrayUnserializer
+from syncthing.xdr.XDRStringSerializer import XDRStringSerializer
+from syncthing.xdr.XDRArraySerializer import XDRArraySerializer
 
 class BEPRepository(BEPSerializable):
     def __init__(self):
@@ -15,3 +17,7 @@ class BEPRepository(BEPSerializable):
         if self.nodes is None:
             return (XDRArrayUnserializer(BEPNode), 'nodes')
         return None
+    
+    def serialize(self, destination):
+        XDRStringSerializer().serialize(self.id, destination)
+        XDRArraySerializer().serialize(self.nodes, destination)

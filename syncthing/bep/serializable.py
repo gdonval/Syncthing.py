@@ -16,3 +16,6 @@ class BEPSerializable(object):
 
     def nextUnserializer(self):
         raise Exception('Unimplemented (virtual)')
+
+    def serialize(self, destination):
+        raise Exception('Unimplemented (virtual)')

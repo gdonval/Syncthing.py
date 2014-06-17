@@ -3,6 +3,8 @@ from syncthing.bep.repository import BEPRepository
 from syncthing.bep.option import BEPOption
 from syncthing.xdr.XDRStringUnserializer import XDRStringUnserializer
 from syncthing.xdr.XDRArrayUnserializer import XDRArrayUnserializer
+from syncthing.xdr.XDRStringSerializer import XDRStringSerializer
+from syncthing.xdr.XDRArraySerializer import XDRArraySerializer
 
 class BEPClusterConfigMessage(BEPMessage):
     BEP_TYPE=0
@@ -22,3 +24,11 @@ class BEPClusterConfigMessage(BEPMessage):
             return (XDRArrayUnserializer(BEPRepository), 'repositories')
         if self.options is None:
             return (XDRArrayUnserializer(BEPOption), 'options')
+
+    def serialize(self, destination):
+        super(BEPClusterConfigMessage, self).serialize(destination)
+        XDRStringSerializer().serialize(self.clientName, destination)
+        XDRStringSerializer().serialize(self.clientVersion, destination)
+        XDRArraySerializer().serialize(self.repositories, destination)
+        XDRArraySerializer().serialize(self.options, destination)
+

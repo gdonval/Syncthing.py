@@ -2,6 +2,9 @@ from syncthing.bep.message import BEPMessage
 from syncthing.xdr.XDRStringUnserializer import XDRStringUnserializer
 from syncthing.xdr.XDRIntegerUnserializer import XDRIntegerUnserializer
 from syncthing.xdr.XDRLongIntegerUnserializer import XDRLongIntegerUnserializer
+from syncthing.xdr.XDRStringSerializer import XDRStringSerializer
+from syncthing.xdr.XDRIntegerSerializer import XDRIntegerSerializer
+from syncthing.xdr.XDRLongIntegerSerializer import XDRLongIntegerSerializer
 
 class BEPRequestMessage(BEPMessage):
     BEP_TYPE=2
@@ -22,3 +25,10 @@ class BEPRequestMessage(BEPMessage):
         if self.size is None:
             return (XDRIntegerUnserializer(), 'size')
         return None
+    
+    def serialize(self, destination):
+        super(BEPRequestMessage, self).serialize(destination)
+        XDRStringSerializer().serialize(self.repository, destination)
+        XDRStringSerializer().serialize(self.name, destination)
+        XDRLongIntegerSerializer().serialize(self.offset, destination)
+        XDRIntegerSerializer().serialize(self.size, destination)
