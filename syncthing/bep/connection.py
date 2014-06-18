@@ -1,5 +1,5 @@
 from asyncio import Protocol,coroutine,Task
-from zlib import decompressobj, compressobj, MAX_WBITS, Z_DEFAULT_COMPRESSION, DEFLATED
+from zlib import decompressobj, compressobj, MAX_WBITS, Z_DEFAULT_COMPRESSION, DEFLATED,Z_SYNC_FLUSH
 from syncthing.bep.message import BEPMessage
 from syncthing.bep.clusterconfigmessage import BEPClusterConfigMessage
 from syncthing.bep.indexmessage import BEPIndexMessage
@@ -91,7 +91,6 @@ class BEPConnection(Protocol):
                 tasks = [Task(self.message_received(msg), loop=self.loop) for msg in result]
 
     def connection_lost(self, exc):
-        self.transport = transport
         try:
             self.app.on_disconnect(connection=self, reason=exc)
         except AttributeError:
@@ -120,7 +119,7 @@ class BEPConnection(Protocol):
             yield from self.app.handle_pong_message(self, msg)
         yield from []
 
-    def write(self, data):
+    def write(self, data, flush=True):
         """Send the data through the connection
 
         This method acts simultaneously like a transport write() and a protocol write(). A
@@ -138,8 +137,12 @@ class BEPConnection(Protocol):
         if not isinstance(data, (bytes, bytearray, memoryview, BEPMessage)):
             raise TypeError('data argument must be byte-ish or a BEPMessage (%r)', type(data))
         if isinstance(data, BEPMessage):
-            return self.write(data.serialize())
+            return data.serialize(self)
+        print("Writing:" + str(data))
         compressed = self.compressor.compress(data)
-        if len(data) > 0:
-            self.transport.write(data)
+        if flush:
+            compressed += self.compressor.flush(Z_SYNC_FLUSH)
+        if len(compressed) > 0:
+            print("Writing (compressed):" + str(compressed))
+            self.transport.write(compressed)
 
