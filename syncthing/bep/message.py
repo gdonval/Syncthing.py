@@ -29,7 +29,7 @@ class BEPMessage(BEPSerializable):
 
     def serialize(self, destination):
         XDRIntegerSerializer().serialize( 
-            (self.version & 0xf << 28) |
-            (self.id & 0xfff << 16) |
-            (self.type & 0xff << 8),
+            ((self.version & 0xf) << 28) |
+            ((self.id & 0xfff) << 16) |
+            ((self.type & 0xff) << 8),
             destination)
