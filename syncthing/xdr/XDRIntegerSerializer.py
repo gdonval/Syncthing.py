@@ -8,4 +8,4 @@ class XDRIntegerSerializer(object):
         return cls._instance
 
     def serialize(self, value, destination):
-        destination.write(struct.pack('>l', len(encoded)))
+        destination.write(pack('>l', value))

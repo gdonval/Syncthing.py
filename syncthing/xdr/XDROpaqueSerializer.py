@@ -8,7 +8,7 @@ class XDROpaqueSerializer(object):
         return cls._instance
 
     def serialize(self, value, destination):
-        destination.write(struct.pack('>l', len(value)))
+        destination.write(pack('>l', len(value)))
         destination.write(value)
         toPad = len(encoded) % 4
         if toPad != 0:

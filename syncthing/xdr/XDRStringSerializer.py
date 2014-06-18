@@ -9,7 +9,7 @@ class XDRStringSerializer(object):
 
     def serialize(self, value, destination):
         encoded = value.encode('utf-8')
-        destination.write(struct.pack('>l', len(encoded)))
+        destination.write(pack('>l', len(encoded)))
         destination.write(encoded)
         toPad = len(encoded) % 4
         if toPad != 0:

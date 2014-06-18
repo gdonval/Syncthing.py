@@ -8,4 +8,4 @@ class XDRLongIntegerSerializer(object):
         return cls._instance
 
     def serialize(self, value, destination):
-        destination.write(struct.pack('>Q', len(encoded)))
+        destination.write(pack('>Q', value))

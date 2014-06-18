@@ -8,7 +8,7 @@ class XDRArraySerializer(object):
         return cls._instance
 
     def serialize(self, value, destination, serializerClass = None):
-        destination.write(struct.pack('>l', len(value)))
+        destination.write(pack('>l', len(value)))
         for elm in value:
             if serializerClass is None:
                 elm.serialize(destination)
