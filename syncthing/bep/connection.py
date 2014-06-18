@@ -1,5 +1,6 @@
 from asyncio import Protocol,coroutine,Task
 from zlib import decompressobj, compressobj, MAX_WBITS, Z_DEFAULT_COMPRESSION, DEFLATED
+from syncthing.bep.message import BEPMessage
 from syncthing.bep.clusterconfigmessage import BEPClusterConfigMessage
 from syncthing.bep.indexmessage import BEPIndexMessage
 from syncthing.bep.requestmessage import BEPRequestMessage
@@ -118,3 +119,27 @@ class BEPConnection(Protocol):
         if type(msg) is BEPPongMessage:
             yield from self.app.handle_pong_message(self, msg)
         yield from []
+
+    def write(self, data):
+        """Send the data through the connection
+
+        This method acts simultaneously like a transport write() and a protocol write(). A
+        protocol write() receives a BEPMessage object and sends it. A transport write receives
+        a byte-ish argument and sends it. The transport behaviour is alien here, it should be 
+        embedded in the asyncio transport. It isn't because those are not easily extensible,
+        and BEP requires zlib compression of the SSL transport stream.
+
+        Long story short: expected usage is as a protocol write(). Pass in a BEPMessage and it 
+        will be sent to the remote endpoint.
+
+        Arguments:
+        data -- An instance of a BEPMessage, to be sent
+        """
+        if not isinstance(data, (bytes, bytearray, memoryview, BEPMessage)):
+            raise TypeError('data argument must be byte-ish or a BEPMessage (%r)', type(data))
+        if isinstance(data, BEPMessage):
+            return self.write(data.serialize())
+        compressed = self.compressor.compress(data)
+        if len(data) > 0:
+            self.transport.write(data)
+
