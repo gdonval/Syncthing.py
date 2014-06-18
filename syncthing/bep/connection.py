@@ -27,14 +27,6 @@ class BEPConnection(Protocol):
         return self._ssl_context
     ssl_context = property(get_ssl_context, None, None, None)
 
-    def handle_connection(self, endpoint, reader, writer):
-        try:
-            while True:
-                data = yield from reader.readline()
-                print(data)
-        finally:
-            pass
-
     def message_factory(self, messageVersion, messageType, messageId):
         if messageType == BEPClusterConfigMessage.BEP_TYPE:
             return BEPClusterConfigMessage(messageVersion, messageId)
